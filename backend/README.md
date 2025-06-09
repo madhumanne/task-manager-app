@@ -15,6 +15,7 @@ This is the backend part of the Task Manager application, built using .NET. The 
 
 - Create, edit, delete, reschedule, and complete tasks.
 - JWT Bearer Authentication for secure API access (login & signup endpoints).
+- **Session Management:** Each login creates a random session GUID stored in the database with expiry. All requests validate the session for expiry. Logout marks the session as expired.
 - Entity Framework Core for database operations.
 
 ## Getting Started

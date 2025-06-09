@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TaskManager.Api.Data;
+using TaskManager.Api.Models;
 using TaskManager.Api.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -63,6 +64,9 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Use session validation middleware from separate file
+app.UseMiddleware<TaskManager.Api.Middleware.SessionValidationMiddleware>();
 
 app.MapControllers();
 

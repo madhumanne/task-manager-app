@@ -8,6 +8,7 @@ This project is a Task Manager application built using Angular for the frontend 
 - Create, edit, delete, and complete tasks.
 - Reschedule tasks with updated due dates.
 - Responsive and user-friendly interface.
+- **Session Management:** Each login creates a random session GUID stored in the database with expiry. All requests validate the session for expiry. Logout marks the session as expired.
 
 ## Technologies Used
 - **Frontend**: Angular
