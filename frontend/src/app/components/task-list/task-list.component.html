@@ -1,0 +1,11 @@
+<a routerLink="/tasks/create">Create Task</a>
+<ul>
+  <li *ngFor="let task of tasks">
+    <span [style.text-decoration]="task.isCompleted ? 'line-through' : 'none'">
+      {{ task.title }} (Due: {{ task.dueDate | date }})
+    </span>
+    <button (click)="editTask(task.id)">Edit</button>
+    <button (click)="deleteTask(task.id)">Delete</button>
+    <button (click)="completeTask(task.id)" [disabled]="task.isCompleted">Complete</button>
+  </li>
+</ul>

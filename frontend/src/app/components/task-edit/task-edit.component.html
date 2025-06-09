@@ -1,0 +1,15 @@
+<form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label>Title</label>
+    <input formControlName="title" type="text" />
+  </div>
+  <div>
+    <label>Description</label>
+    <input formControlName="description" type="text" />
+  </div>
+  <div>
+    <label>Due Date</label>
+    <input formControlName="dueDate" type="date" />
+  </div>
+  <button type="submit">Update Task</button>
+</form>
