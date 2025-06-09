@@ -6,7 +6,7 @@ This is the backend part of the Task Manager application, built using .NET. The 
 
 - **Controllers**: Contains the `TasksController` and `AuthController` for managing tasks and authentication (login/signup).
 - **Models**: Contains the `TaskItem` class and user/authentication models.
-- **Services**: Contains the `TaskService` and authentication/JWT services.
+- **Services**: Contains the `TaskService`, `AuthService`, and authentication/JWT services. All DB operations are performed via these services.
 - **Data**: Contains the `ApplicationDbContext` class for configuring the database context using Entity Framework Core.
 - **Configuration**: The `appsettings.json` file holds configuration settings including connection strings and JWT settings.
 - **Program.cs**: Uses the minimal hosting model to configure services and the application's request pipeline (no `Startup.cs`).
@@ -16,7 +16,7 @@ This is the backend part of the Task Manager application, built using .NET. The 
 - Create, edit, delete, reschedule, and complete tasks.
 - JWT Bearer Authentication for secure API access (login & signup endpoints).
 - **Session Management:** Each login creates a random session GUID stored in the database with expiry. All requests validate the session for expiry. Logout marks the session as expired.
-- Entity Framework Core for database operations.
+- Entity Framework Core for database operations, always accessed through services.
 
 ## Getting Started
 

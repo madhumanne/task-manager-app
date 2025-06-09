@@ -50,6 +50,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<TaskService>();
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
 

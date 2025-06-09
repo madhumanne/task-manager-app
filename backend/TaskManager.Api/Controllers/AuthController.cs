@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -9,6 +8,7 @@ using TaskManager.Api.Data;
 using TaskManager.Api.Models;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using TaskManager.Api.Services;
 using System.Linq;
 using System;
 
@@ -18,31 +18,21 @@ namespace TaskManager.Api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AuthService _authService;
         private readonly IConfiguration _configuration;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration)
+        public AuthController(AuthService authService, IConfiguration configuration)
         {
-            _context = context;
+            _authService = authService;
             _configuration = configuration;
         }
 
         [HttpPost("signup")]
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                return BadRequest("Email already exists.");
-
-            var user = new User
-            {
-                Name = request.Name,
-                Email = request.Email,
-                Phone = request.Phone,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            var result = await _authService.SignupAsync(request.Name, request.Email, request.Phone, request.Password);
+            if (!result.Success)
+                return BadRequest(result.Message);
 
             return Ok(new { message = "Signup successful" });
         }
@@ -50,23 +40,13 @@ namespace TaskManager.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-                return Unauthorized("Invalid credentials.");
-
-            // Create session
-            var sessionId = Guid.NewGuid();
             var expiry = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"]));
-            var session = new Session
-            {
-                SessionId = sessionId,
-                UserId = user.Id,
-                Expiry = expiry,
-                IsExpired = false
-            };
-            _context.Sessions.Add(session);
-            await _context.SaveChangesAsync();
-
+            var result = await _authService.LoginAsync(request.Email, request.Password, expiry);
+            if (!result.Success)
+                return Unauthorized(result.Message);
+            var user = result.User;
+            var sessionId = result.SessionId;
+            
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -104,16 +84,10 @@ namespace TaskManager.Api.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            // Get sessionid from JWT token (claims)
             var sessionIdClaim = User.Claims.FirstOrDefault(c => c.Type == "sessionid");
             if (sessionIdClaim != null && Guid.TryParse(sessionIdClaim.Value, out var sessionId))
             {
-                var session = await _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == sessionId && !s.IsExpired);
-                if (session != null)
-                {
-                    session.IsExpired = true;
-                    await _context.SaveChangesAsync();
-                }
+                await _authService.LogoutAsync(sessionId);
             }
             Response.Cookies.Delete("jwt");
             return Ok(new { message = "Logged out" });
