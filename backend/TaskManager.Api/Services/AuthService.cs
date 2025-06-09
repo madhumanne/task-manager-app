@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TaskManager.Api.Models;
 using TaskManager.Api.Data;
@@ -64,6 +62,12 @@ namespace TaskManager.Api.Services
                 session.IsExpired = true;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<bool> IsSessionValidAsync(Guid sessionId)
+        {
+            var session = await _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == sessionId);
+            return session != null && !session.IsExpired && session.Expiry > DateTime.UtcNow;
         }
     }
 }
